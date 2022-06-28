@@ -1,0 +1,69 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
+import { Student } from '../models/api-models/student.model';
+import { AddStudentUI } from '../models/ui-models/addstudentui.model';
+import { UpdateStudentUI } from '../models/ui-models/updatestudentui.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class StudentsService {
+  private url=environment.url;
+  constructor(private http:HttpClient) { }
+  getStudents():Observable<Student[]>{
+    return this.http.get<Student[]>(this.url+'/students');
+  }
+  getStudent(studentId:string):Observable<Student>{
+    return this.http.get<Student>(this.url+'/students/'+studentId);
+  }
+  updateStudent(studentId: string, studentRequest: Student): Observable<Student> {
+    const updateStudentRequest: UpdateStudentUI = {
+      firstName: studentRequest.firstName,
+      lastName: studentRequest.lastName,
+      dateOfBirth: studentRequest.dateOfBirth,
+      email: studentRequest.email,
+      mobile: studentRequest.mobile,
+      genderId: studentRequest.genderId,
+      physicalAddress: studentRequest.address.physicalAddress,
+      postalAddress: studentRequest.address.postalAddress
+    }
+
+    return this.http.put<Student>(this.url + '/students/' + studentId, updateStudentRequest);
+  }
+
+  deleteStudent(studentId: string): Observable<Student> {
+    return this.http.delete<Student>(this.url + '/students/' + studentId);
+  }
+
+  addStudent(studentRequest: Student): Observable<Student> {
+    const addStudentRequest: AddStudentUI = {
+      firstName: studentRequest.firstName,
+      lastName: studentRequest.lastName,
+      dateOfBirth: studentRequest.dateOfBirth,
+      email: studentRequest.email,
+      mobile: studentRequest.mobile,
+      genderId: studentRequest.genderId,
+      physicalAddress: studentRequest.address.physicalAddress,
+      postalAddress: studentRequest.address.postalAddress
+    };
+
+    return this.http.post<Student>(this.url + '/students/add', addStudentRequest);
+  }
+
+  uploadImage(studentId: string, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append("profileImage", file);
+
+    return this.http.post(this.url + '/students/' + studentId + '/upload-image',
+      formData, {
+      responseType: 'text'
+    }
+    );
+  }
+
+  getImagePath(relativePath: string) {
+    return `${this.url}/${relativePath}`;
+  }
+}
